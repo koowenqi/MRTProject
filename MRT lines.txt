@@ -1,0 +1,171 @@
+CC1;Dhoby Ghaut;Circle
+CC2;Bras Basah;Circle
+CC3;Esplanade;Circle
+CC4;Promenade;Circle
+CC5;Nicoll Highway;Circle
+CC6;Stadium;Circle
+CC7;Mountbatten;Circle
+CC8;Dakota;Circle
+CC9;Paya Lebar;Circle
+CC10;MacPherson;Circle
+CC11;Tai Seng;Circle
+CC12;Bartley;Circle
+CC13;Serangoon;Circle
+CC14;Lorong Chuan;Circle
+CC15;Bishan;Circle
+CC16;Marymount;Circle
+CC17;Caldecott;Circle
+CC19;Botanic Gardens;Circle
+CC20;Farrer Road;Circle
+CC21;Holland Village;Circle
+CC22;Buona Vista;Circle
+CC23;One-north;Circle
+CC24;Kent Ridge;Circle
+CC25;Haw Par Villa;Circle
+CC26;Pasir Panjang;Circle
+CC27;Labrador Park;Circle
+CC28;Telok Blangah;Circle
+CC29;Harbour Front;Circle
+CE1;Bayfront;Circle
+CE2;Marina Bay;Circle
+DT1;Bukit Panjang;Downtown
+DT2;Cashew;Downtown
+DT3;Hillview;Downtown
+DT4;Hume;Downtown
+DT5;Beauty World;Downtown
+DT6;King Albert Park;Downtown
+DT7;Sixth Avenue;Downtown
+DT8;Tan Kah Kee;Downtown
+DT9;Botanic Gardens;Downtown
+DT10;Stevens;Downtown
+DT11;Newton;Downtown
+DT12;Little India;Downtown
+DT13;Rochor;Downtown
+DT14;Bugis;Downtown
+DT15;Promenade;Downtown
+DT16;Bayfront;Downtown
+DT17;Downtown;Downtown
+DT18;Telok Ayer;Downtown
+DT19;Chinatown;Downtown
+DT20;Fort Canning;Downtown
+DT21;Bencoolen;Downtown
+DT22;Jalan Besar;Downtown
+DT23;Bendemeer;Downtown
+DT24;Geylang Bahru;Downtown
+DT25;Mattar;Downtown
+DT26;MacPherson;Downtown
+DT27;Ubi;Downtown
+DT28;Kaki Bukit;Downtown
+DT29;Bedok North;Downtown
+DT30;Bedok Reservoir;Downtown
+DT31;Tampines West;Downtown
+DT32;Tampines;Downtown
+DT33;Tampines East;Downtown
+DT34;Upper Changi;Downtown
+DT35;Expo;Downtown
+CG;Tanah Merah;East-West
+CG1;Expo;East-West
+EW1;Pasir Ris;East-West
+EW2;Tampines;East-West
+EW3;Simei;East-West
+EW4;Tanah Merah;East-West
+EW5;Bedok;East-West
+EW6;Kembangan;East-West
+EW7;Eunos;East-West
+EW8;Paya Lebar;East-West
+EW9;Aljunied;East-West
+EW10;Kallang;East-West
+EW11;Lavender;East-West
+EW12;Bugis;East-West
+EW13;City Hall;East-West
+EW14;Raffles Place;East-West
+EW15;Tanjong Pagar;East-West
+EW16;Outram Park;East-West
+EW17;Tiong Bahru;East-West
+EW18;Redhill;East-West
+EW19;Queenstown;East-West
+EW20;Commonwealth;East-West
+EW21;Buona Vista;East-West
+EW22;Dover;East-West
+EW23;Clementi;East-West
+EW24;Jurong East;East-West
+EW25;Chinese Garden;East-West
+EW26;Lakeside;East-West
+EW27;Boon Lay;East-West
+EW28;Pioneer;East-West
+EW29;Joo Koon;East-West
+EW30;Gul Circle;East-West
+EW31;Tuas Crescent;East-West
+EW32;Tuas West Road;East-West
+EW33;Tuas Link;East-West
+NE1;Harbour Front;North East
+NE3;Outram Park;North East
+NE4;Chinatown;North East
+NE5;Clarke Quay;North East
+NE6;Dhoby Ghaut;North East
+NE7;Little India;North East
+NE8;Farrer Park;North East
+NE9;Boon Keng;North East
+NE10;Potong Pasir;North East
+NE11;Woodleigh;North East
+NE12;Serangoon;North East
+NE13;Kovan;North East
+NE14;Hougang;North East
+NE15;Buangkok;North East
+NE16;Sengkang;North East
+NE17;Punggol;North East
+NE18;Punggol Coast;North East
+NS1;Jurong East;North-South
+NS2;Bukit Batok;North-South
+NS3;Bukit Gombak;North-South
+NS4;Choa Chu Kang;North-South
+NS5;Yew Tee;North-South
+NS7;Kranji;North-South
+NS8;Marsiling;North-South
+NS9;Woodlands;North-South
+NS10;Admiralty;North-South
+NS11;Sembawang;North-South
+NS12;Canberra;North-South
+NS13;Yishun;North-South
+NS14;Khatib;North-South
+NS15;Yio Chu Kang;North-South
+NS16;Ang Mo Kio;North-South
+NS17;Bishan;North-South
+NS18;Braddell;North-South
+NS19;Toa Payoh;North-South
+NS20;Novena;North-South
+NS21;Newton;North-South
+NS22;Orchard;North-South
+NS23;Somerset;North-South
+NS24;Dhoby Ghaut;North-South
+NS25;City Hall;North-South
+NS26;Raffles Place;North-South
+NS27;Marina Bay;North-South
+NS28;Marina South Pier;North-South
+TE1;Woodlands North;Thomson-East Coast
+TE2;Woodlands;Thomson-East Coast
+TE3;Woodlands South;Thomson-East Coast
+TE4;Springleaf;Thomson-East Coast
+TE5;Lentor;Thomson-East Coast
+TE6;Mayflower;Thomson-East Coast
+TE7;Bright Hill;Thomson-East Coast
+TE8;Upper Thomson;Thomson-East Coast
+TE9;Caldecott;Thomson-East Coast
+TE11;Stevens;Thomson-East Coast
+TE12;Napier;Thomson-East Coast
+TE13;Orchard Boulevard;Thomson-East Coast
+TE14;Orchard;Thomson-East Coast
+TE15;Great World;Thomson-East Coast
+TE16;Havelock;Thomson-East Coast
+TE17;Outram Park;Thomson-East Coast
+TE18;Maxwell;Thomson-East Coast
+TE19;Shenton Way;Thomson-East Coast
+TE20;Marina Bay;Thomson-East Coast
+TE22;Gardens by the Bay;Thomson-East Coast
+TE23;Tanjong Rhu;Thomson-East Coast
+TE24;Katong Park;Thomson-East Coast
+TE25;Tanjong Katong;Thomson-East Coast
+TE26;Marine Parade;Thomson-East Coast
+TE27;Marine Terrace;Thomson-East Coast
+TE28;Siglap;Thomson-East Coast
+TE29;Bayshore;Thomson-East Coast
