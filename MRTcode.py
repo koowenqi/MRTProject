@@ -1,11 +1,17 @@
 mrt = []
 lines = []
-mrtlines = []
-stationcat = {}
-mrtdict = {}
+mrtlines = [] #["Dhoby Ghaut", "Circle"]
+stationcat = {} #"CC1": "Circle"
+mrtdict = {} #"CC1": "Dhoby Ghaut"
 speeddict = {}
 
 choices = ["1", "2", "3", "4", "5", "6"]
+
+def sort_key(item):
+    # Extract the prefix and numeric part
+    prefix = item[0][:2]
+    number = int(item[0][2:])
+    return (prefix, number)
 
 def readingfiles():
     mrtfile = open("MRT.txt", "r")
@@ -14,20 +20,34 @@ def readingfiles():
         i = line.split(";")
         if position <= 4:
             continue
-        else:
-            mrt.append(i)
-        if i[2] not in lines:
-            lines.append(i[2])
+        mrt.append(i)
+        station = i[1].split(" <-> ")
+        station1_code, station1_name = station[0].split(" ", 1)
+        station2_code, station2_name = station[1].split(" ", 1)
+        if station1_code not in mrtdict:
+            mrtdict[station1_code] = station1_name
+        if station2_code not in mrtdict:
+            mrtdict[station2_code] = station2_name
+        if [station1_name, i[2]] not in mrtlines:
+            mrtlines.append([station1_name, i[2]])
+        if [station2_name, i[2]] not in mrtlines:
+            mrtlines.append([station2_name, i[2]])
+        if station1_code not in stationcat:
+            stationcat[station1_code] = i[2]
+        if station2_code not in stationcat:
+            stationcat[station2_code] = i[2]
+        if i[2].lower() not in lines:
+            lines.append(i[2].lower())
     mrtfile.close()
 
-    linesfile = open("MRT lines.txt", "r")
-    linesfile.seek(0)
-    for line in linesfile:
-        i = line.split(";")
-        mrtdict[i[0]] = i[1]
-        mrtlines.append([i[1], i[2].strip()])
-        stationcat[i[0]] = i[2].strip()
-    linesfile.close()
+    # linesfile = open("MRT lines.txt", "r")
+    # linesfile.seek(0)
+    # for line in linesfile:
+    #     i = line.split(";")
+    #     mrtdict[i[0]] = i[1]
+    #     mrtlines.append([i[1], i[2].strip()])
+    #     stationcat[i[0]] = i[2].strip()
+    # linesfile.close()
 
     speedfile = open("MRT speed.txt", "r")
     speedfile.seek(0)
@@ -47,23 +67,29 @@ def mainscreen():
     print("6. Find the fare required from Station A to B during peak hours")
 
 def opt1():
+    templist = []
     print("\nWhat is the MRT line you would like to enquire about?")
     print("Here is a list of lines that you can inquire about:")
     for i in lines:
-        print(i)
+        print(i.capitalize())
+    print()
     line = input(">>> ")
-    while line not in lines:
+    while str(line).lower() not in lines:
         print("\nThat is not a valid option!")
         print("Please try again! >_<")
-        line = input(">>> ")
-    print(f"Here is a list of station in the {line} line")
-    for i in mrtlines:
-        if line == i[1]:
-            for k1, v1 in mrtdict.items():
-                for k2, v2 in stationcat.items():
-                    if v1 == i[0] and v2 == i[1] and k1 == k2:
-                        print(f"{k1} {v1}")
+        line = input("\n>>> ")
+    print(f"\nHere is a list of station in the {line} line")
+    for i in mrtlines: #["Dhoby Ghaut", "Circle"] this is an eg of i
+        # print(i[1].lower(), line.lower())
+        if line.lower() == i[1].lower():
+            for k1, v1 in mrtdict.items(): #"CC1", "Dhoby Ghaut"
+                for k2, v2 in stationcat.items(): #"CC1", "Circle"
+                    if v1 == i[0] and v2.lower() == line.lower() and k1 == k2:
+                        templist.append([k1, v1])
                         break
+    templist.sort(key=sort_key)
+    for i in templist:
+        print(f"{i[0]} {i[1]}")
 
 def opt2():
     print()
