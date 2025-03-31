@@ -8,9 +8,13 @@ speeddict = {}
 choices = ["1", "2", "3", "4", "5", "6"]
 
 def sort_key(item):
-    # Extract the prefix and numeric part
+     # Extract the prefix and numeric part
     prefix = item[0][:2]
-    number = int(item[0][2:])
+    number = 0  # Default number for prefixes with no number, e.g., "CG"
+    
+    # Check if the prefix has a numeric part after it
+    if len(item[0]) > 2 and item[0][2:].isdigit():
+        number = int(item[0][2:])
     return (prefix, number)
 
 def readingfiles():
