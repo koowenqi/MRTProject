@@ -212,7 +212,19 @@ def opt4():
     print()
 
 def opt5():
-    print()
+    print("\nWhich station would you like to know about?")
+    station = input(">>> ")
+    while station.lower() not in stations:
+        print("That station does not exist!")
+        print("Please try again! >_<")
+        station = input(">>> ")
+    possiblelines = []
+    for i in mrtlines:
+        if i[0] == station.title():
+            possiblelines.append(i[1])
+    print(f"\n{station} station belongs to the following line(s):")
+    for i in possiblelines:
+        print(f"{i} line")
 
 def opt6():
     print()
