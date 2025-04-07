@@ -19,6 +19,19 @@ def sort_key(item):
         number = int(item[0][2:])
     return (prefix, number)
 
+def get_station_code(name):
+    for code in mrtdict:
+        if code == name:
+            return True
+    return False
+
+def get_all_station_code(name):
+    codes = []
+    for code in mrtdict:
+        if mrtdict[code].lower() == name.lower():
+            codes.append(code)
+    return "/".join(codes) if codes else None
+
 #function to read into each file and stores the data into lists and dicts
 def readingfiles():
     mrtfile = open("MRT.txt", "r")
@@ -103,6 +116,39 @@ def opt1():
     for i in templist:
         print(f"{i[0]} {i[1]}")
 
+def stationconnect(): #maps every station to the next station it will go to and vice versa
+    connect = {}
+    for i in mrt:
+        station = i[1].split(" <-> ")
+        station1_code, station1_name = station[0].split(" ", 1)
+        station2_code, station2_name = station[1].split(" ", 1)
+        if station1_name not in connect:
+            connect[station1_name] = []
+        if station2_name not in connect:
+            connect[station2_name] = []
+        if station1_name not in connect[station2_name]:
+            connect[station2_name].append(station1_name)
+        if station2_name not in connect[station1_name]:
+            connect[station1_name].append(station2_name)
+    return(connect)
+
+def bfs_shortest_path(connect, start, end):
+    queue = [[start]]
+    visited = set()
+    while queue:
+        path = queue.pop(0)
+        station = path[-1]
+        if station == end:
+            return path
+        if station not in visited:
+            visited.add(station)
+            for nextstation in connect.get(station, []):
+                if nextstation not in visited:
+                    new_path = list(path)
+                    new_path.append(nextstation)
+                    queue.append(new_path)
+    return None
+        
 def opt2():
     print("\nPlease enter the station you want to start at")
     startstation = input("Start Station: ")
@@ -120,91 +166,16 @@ def opt2():
         print("\nYou cannot end at the same station!")
         print("Please select another end station!")
         endstation = input("\nEnd Station: ")
-    firststation = []
-    laststation = []
-    for i in mrtlines:
-        if i[0] == startstation.title():
-            firststation.append(i)
-        if i[0] == endstation.title():
-            laststation.append(i)
-    line1 = {i[1] for i in firststation}
-    line2 = {i[1] for i in laststation}
-    commonline = line1 & line2
-    if commonline: #if they possess the same line (e.g. you want to go from Seragoon (North East) to Sengkang (North East))
-        firststation = [i for i in firststation if i[1] in commonline]
-        laststation = [item for item in laststation if item[1] in commonline]
-        temp = []
-        bestroute = []
-        for i in mrt:
-            station = i[1].split(" <-> ")
-            station1_code, station1_name = station[0].split(" ", 1)
-            station2_code, station2_name = station[1].split(" ", 1)
-            line = i[2]
-            if station1_name == firststation[0][0] and line == firststation[0][1]:
-                temp.append(i)
-        station = temp[0][1].split(" <-> ")
-        station1_code, station1_name = station[0].split(" ", 1)
-        station2_code, station2_name = station[1].split(" ", 1)
-        bestroute.append([station1_code, station1_name])
-        bestroute.append([station2_code, station2_name])
-        while True:
-            if bestroute[-1][1] == endstation.title():
-                break
-            for i in mrt:
-                station = i[1].split(" <-> ")
-                station1_code, station1_name = station[0].split(" ", 1)
-                station2_code, station2_name = station[1].split(" ", 1)
-                line = i[2]
-                if station1_name == bestroute[-1][1] and line == firststation[0][1]:
-                    bestroute.append([station2_code, station2_name])
-                    break
-        print("\nYour best route would be: ")
-        for i in bestroute:
-            print(f"{i[0]} {i[1]}")
-    else: #if they dont possess the same line (e.g. you want to go from Sengkang (North East) to Little India (Downtown))
-        print("Not implemented yet sorry!")
-
-    # for i in mrt:
-    #     station = i[1].split(" <-> ")
-    #     station1_code, station1_name = station[0].split(" ", 1)
-    #     if station1_name.lower() == startstation.lower():
-    #         temp.append(i)
-    # fastest = min(float(i[3]) for i in temp)
-    # shortestroute = [i for i in temp if float(i[3]) == fastest]
-    # station = shortestroute[0][1].split(" <-> ")
-    # station1_code, station1_name = station[0].split(" ", 1)
-    # station2_code, station2_name = station[1].split(" ", 1)
-    # print(station1_name)
-    # print(station2_name)
-    # if len(bestroute) == 0:
-    #     bestroute.append([station1_code, station1_name])
-    #     bestroute.append([station2_code, station2_name])
-    # else:
-    #     bestroute.append([station2_code, station2_name])
-
-    # while True:
-    #     if bestroute[-1] == endstation:
-    #         break
-    #     temp = []
-    #     for i in mrt:
-    #         station = i[1].split(" <-> ")
-    #         station1_code, station1_name = station[0].split(" ", 1)
-    #         if station1_name.title() == bestroute[-1][1]:
-    #             temp.append(i)
-    #     fastest = min(float(i[3]) for i in temp)
-    #     shortestroute = [i for i in temp if float(i[3]) == fastest]
-    #     station = shortestroute[0][1].split(" <-> ")
-    #     station1_code, station1_name = station[0].split(" ", 1)
-    #     station2_code, station2_name = station[1].split(" ", 1)
-    #     print(station1_name)
-    #     print(station2_name)
-    #     if len(bestroute) == 0:
-    #         bestroute.append([station1_code, station1_name])
-    #         bestroute.append([station2_code, station2_name])
-    #     else:
-    #         bestroute.append([station2_code, station2_name])
-    # print(bestroute)
-
+    connected = stationconnect()
+    path = bfs_shortest_path(connected, startstation.title(), endstation.title())
+    if path is None:
+        print(f"No path was found from {startstation.title()} to {endstation.title()}")
+    else:
+        print("\nShortest path:")
+        for station in path:
+            code = get_all_station_code(station)
+            print(f"{code} {station}")
+    
 def opt3():
     print()
 
