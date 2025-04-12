@@ -91,7 +91,7 @@ def mainscreen():
     print("5. What MRT line is your station on")
     print("6. Find the fare required from Station A to B during peak hours")
 
-def opt1():
+def opt1(): #list every station of an MRT line
     templist = []
     print("\nWhat is the MRT line you would like to enquire about?")
     print("Here is a list of lines that you can inquire about:")
@@ -132,24 +132,24 @@ def stationconnect(): #maps every station to the next station it will go to and 
             connect[station1_name].append(station2_name)
     return(connect)
 
-def bfs_shortest_path(connect, start, end):
-    queue = [[start]]
-    visited = set()
+def bfs_shortest_path(connect, start, end): #Finding the shortest path to the destination
+    queue = [[start]] #Holds the path
+    visited = set() #Keeps track of visited stations
     while queue:
-        path = queue.pop(0)
-        station = path[-1]
+        path = queue.pop(0) #Gets the oldest path in the queue
+        station = path[-1] #Gets the last station from the path
         if station == end:
-            return path
+            return path #Found the shortest path
         if station not in visited:
             visited.add(station)
             for nextstation in connect.get(station, []):
                 if nextstation not in visited:
-                    new_path = list(path)
+                    new_path = list(path) #list(path) == path + [nextstation]
                     new_path.append(nextstation)
                     queue.append(new_path)
     return None
         
-def opt2():
+def opt2(): #Find the best route between two stations
     print("\nPlease enter the station you want to start at")
     startstation = input("Start Station: ")
     while startstation.lower() not in stations:
@@ -174,15 +174,18 @@ def opt2():
         print("\nShortest path:")
         for station in path:
             code = get_all_station_code(station)
-            print(f"{code} {station}")
+            print(f"{' -> ' if station != path[0] else ''}{code} {station}", end="")
+        print()
+    return(path)
     
-def opt3():
+def opt3(): #Distance and time of travel between 2 stations
+    path = opt2()
+    
+
+def opt4(): #Whether there is a train running and if it will arrive at your destination station before the last train time
     print()
 
-def opt4():
-    print()
-
-def opt5():
+def opt5(): #What MRT line the station is at
     print("\nWhich station would you like to know about?")
     station = input(">>> ")
     while station.lower() not in stations:
@@ -197,7 +200,7 @@ def opt5():
     for i in possiblelines:
         print(f"{i} line")
 
-def opt6():
+def opt6(): #Find the fare required from Station A to B during peak hours
     print()
 
 def main():
