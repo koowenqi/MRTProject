@@ -7,6 +7,7 @@ mrtlines = [] #Stores the line each station corresponds with (e.g. ["Dhoby Ghaut
 stationcat = {} #Assigns the line each MRT code corresponds with (e.g. "CC1": "Circle")
 mrtdict = {} #Assigns each MRT code to the station (e.g. "CC1": "Dhoby Ghaut")
 speeddict = {} #speed of each line
+fares = {"adult": [], "senior": [], "student": []} #Fare for each age category (e.g. adult = [0.0, 3.2, 119])
 
 line_prefixes = {
     "CC": "Circle",
@@ -57,6 +58,37 @@ def readingfiles():
         i = line.split(";")
         speeddict[i[0]] = int(i[1].strip())
     speedfile.close()
+
+    farefile = open("Fare Structure.txt", "r")
+    farefile.seek(0)
+    current_cat = None
+    for line in farefile:
+        i = line.strip()
+        if not i or i.endswith(":"):
+            continue
+        if "Adult" in line:
+            current_cat = "adult"
+            continue
+        if "Senior" in line:
+            current_cat = "senior"
+            continue
+        if "Student" in line:
+            current_cat = "student"
+            continue
+
+        if current_cat and ";" in line:
+            distance, fare = line.split(";")
+            if fare.isdigit():
+                fare = int(fare)
+                if "Up to" in distance:
+                    upper = float(distance.split(" ")[-2])
+                    fares[current_cat].append(0.0, upper, fare)
+                if "Over" in distance:
+                    lower = float(distance.split(" ")[-2]) + 0.1
+                    fares[current_cat].append((lower, float("inf"), fare))
+                else:
+                    lower, upper = distance.split(" - ")
+                    fare[current_cat].append(float(lower), float(upper), fare)
 
 #Function to sort the stations
 def sort_key(item):
@@ -114,7 +146,7 @@ def mainscreen():
     print("3. Distance and time of travel between two stations")
     print("4. Whether there is a train running and if it will arrive at your destination station before the last train time")
     print("5. What MRT line is your station on")
-    print("6. Find the fare required from Station A to B during peak hours")
+    print("6. Find the fare required from Station A to B")
 
 #List every station of an MRT line
 def opt1(): 
@@ -258,6 +290,13 @@ def get_user_time():
                 pass
         print("You have entered an invalid timing, please try again!")
 
+#Gets the fare for a certain distance and age category
+def get_fare(distance, cat, fare):
+    for lower, upper, price in fares[cat]:
+        if lower <= distance <= upper:
+            return price
+    return None
+
 #Find the shortest route between two stations
 def opt2(): 
     startstation, endstation, path, total_distance = calcbestroute()
@@ -389,9 +428,38 @@ def opt5():
     for i in range(len(possiblelines)):
         print(f"{possiblelines[i]} line ({stationcodes[i]})")
 
-#Find the fare required from Station A to B during peak hours
+#Find the fare required from Station A to B
 def opt6(): 
-    print()
+    start, end, path, distance = calcbestroute()
+    print(fares)
+    print("\nWhat is your age category (Adult, Student, Senior)?")
+    cat = input("Enter age category: ").strip()
+    while str(cat).lower() not in fares:
+        print("\nThat is not a valid age category!")
+        print("Please try again! >_<")
+        cat = input("\nEnter age category: ").strip()
+    print(f"Age Category selected: {cat.lower().capitalize()}")
+    print("\nIs it peak or off peak hours? (y/n)")
+    print("Peak hours: Before 7.45am")
+    peak = input(">>> ").strip()
+    while str(peak).lower() != "yes" and str(peak).lower() != "y" and str(peak).lower() != "no" and str(peak).lower() != "n":
+        print("\nThat is not a valid option!")
+        print("Please try again! >_<")
+        peak = input(">>> ").strip()
+    if "y" in peak.lower():
+        peakh = True
+    else:
+        peakh = False
+
+    fare = get_fare(distance, cat, fares)
+    if peakh:
+        fare -= 50.0
+    if fare < 0.0:
+        fare = 0.0
+    if fare > 99:
+        print(f"The total fare is: {fare//100} dollar(s) and {fare%100} cent(s)")
+    else:
+        print(f"The total fare is: {fare} cent(s)")
 
 #The main function that compiles all the options together
 def main():
@@ -424,7 +492,7 @@ while True:
         print("\nThat is not a valid option!")
         print("Please try again! >_<")
         resume = input(">>> ").strip()
-    if "y" in resume:
+    if "y" in resume.lower():
         continue
     else:
         break
