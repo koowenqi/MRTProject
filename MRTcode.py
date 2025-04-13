@@ -17,7 +17,7 @@ line_prefixes = {
     "NE": "North East",
     "TE": "Thomson-East Coast"
 }
-choices = ["1", "2", "3", "4", "5", "6"] #All the possible choices the user can make
+choices = ["1", "2", "3", "4", "5", "6", "7", "8"] #All the possible choices the user can make
 
 #function to read into each file and stores the data into lists and dicts
 def readingfiles():
@@ -66,29 +66,31 @@ def readingfiles():
         i = line.strip()
         if not i or i.endswith(":"):
             continue
-        if "Adult" in line:
+        if "Adult" in i:
             current_cat = "adult"
             continue
-        if "Senior" in line:
+        if "Senior" in i:
             current_cat = "senior"
             continue
-        if "Student" in line:
+        if "Student" in i:
             current_cat = "student"
             continue
 
-        if current_cat and ";" in line:
-            distance, fare = line.split(";")
+        if current_cat and ";" in i:
+            distance, fare = i.split(";")
             if fare.isdigit():
                 fare = int(fare)
                 if "Up to" in distance:
                     upper = float(distance.split(" ")[-2])
-                    fares[current_cat].append(0.0, upper, fare)
-                if "Over" in distance:
+                    fares[current_cat].append((0.0, upper, fare))
+                elif "Over" in distance:
                     lower = float(distance.split(" ")[-2]) + 0.1
                     fares[current_cat].append((lower, float("inf"), fare))
                 else:
                     lower, upper = distance.split(" - ")
-                    fare[current_cat].append(float(lower), float(upper), fare)
+                    lower = lower.split(" ", 1)[0]
+                    upper = upper.split(" ", 1)[0]
+                    fares[current_cat].append((float(lower), float(upper), fare))
 
 #Function to sort the stations
 def sort_key(item):
@@ -127,16 +129,6 @@ def get_all_station_code(name):
             codes.append(code)
     return "/".join(codes) if codes else None
 
-#Function to get the distance between side by side stations
-def get_distance_between(s1, s2):
-    for i in mrt:
-        s = i[1].split(" <-> ")
-        name1 = s[0].split(" ", 1)[1]
-        name2 = s[1].split(" ", 1)[1]
-        if (s1 == name1 and s2 == name2) or (s1 == name2 and s2 == name1):
-            return float(i[3]), i[2]  # distance, line
-    return 0.0, None
-
 #Function to print the mainscreen
 def mainscreen():
     print("\nWelcome to the MRT Information Centre!")
@@ -147,6 +139,8 @@ def mainscreen():
     print("4. Whether there is a train running and if it will arrive at your destination station before the last train time")
     print("5. What MRT line is your station on")
     print("6. Find the fare required from Station A to B")
+    print("7. Show all interchange stations")
+    print("8. First and last train timings for a line, station or all the stations")
 
 #List every station of an MRT line
 def opt1(): 
@@ -244,14 +238,13 @@ def calcbestroute():
     while not endstation:
         user = input("End Station: ").strip()
         endstation = recogniseinput(user)
-        if not endstation or startstation.lower() == endstation.lower():
+        if not endstation:
+            print("That station does not exist!")
+            print("Please try again! >_<")
+        if endstation:
             if startstation.lower() == endstation.lower():
                 print("\nYou cannot end at the same station!")
                 print("Please select another end station!")
-            else:
-                print("That station does not exist!")
-                print("Please try again! >_<")
-            endstation = None
     print(f"End Station selected: {endstation}")
 
     connected = stationconnect()
@@ -263,6 +256,74 @@ def calcbestroute():
     
     return startstation, endstation, path, total_distance
 
+#Find the shortest route between two stations
+def opt2(): 
+    startstation, endstation, path, total_distance = calcbestroute()
+    
+    print("\nRoute:")
+    prev_line = None
+    current_segment = []
+    for i in range(len(path)):
+        station = path[i]
+        code = get_all_station_code(station)
+        current_line = None
+
+        if i < len(path) - 1:
+            distance, current_line = get_distance_between(path[i], path[i + 1])
+        elif i > 0:
+            distance, current_line = get_distance_between(path[i - 1], path[i])
+
+        current_segment.append(f"{code} {station}")
+
+        # If line changes or it's the last station, print the segment
+        line_changed = current_line != prev_line and prev_line is not None
+        is_last = i == len(path) - 1
+
+        if line_changed or is_last:
+            if prev_line is None:
+                print(f"On {current_line} Line")
+            else:
+                print(f"\nTransfer to {prev_line} Line")
+
+            print(" -> ".join(current_segment))
+            current_segment = []
+
+        prev_line = current_line
+    return(path, total_distance)
+
+#Function to get the distance between side by side stations
+def get_distance_between(s1, s2):
+    for i in mrt:
+        s = i[1].split(" <-> ")
+        name1 = s[0].split(" ", 1)[1]
+        name2 = s[1].split(" ", 1)[1]
+        if (s1 == name1 and s2 == name2) or (s1 == name2 and s2 == name1):
+            return float(i[3]), i[2]  # distance, line
+    return 0.0, None
+
+#Distance and time of travel between 2 stations
+def opt3(): 
+    path, distance = opt2()
+    total_time = 0.0
+    for i in range(len(path) - 1):
+        d, line = get_distance_between(path[i], path[i + 1])
+        prev_line = None
+        if i > 0:
+            _, prev_line = get_distance_between(path[i - 1], path[i])
+        segment_time = 0.0
+        if i < len(path) - 1:
+            if line and line in speeddict and speeddict[line] != 0:
+                total_time += d / speeddict[line] * 60 + 4 #include waiting time for alighting and boarding per station
+        if prev_line and line != prev_line:
+            segment_time += 3 #transfer from one line to another
+        total_time += segment_time
+    
+    print(f"\nTotal distance: {distance:.2f}km")
+    if total_time < 60:
+        print(f"Estimated travel time: {total_time:.1f} minutes")
+    else:
+        print(f"Estimated travel time: {int(total_time // 60)} hour(s) and {int(total_time%60)} minute(s)")
+    
 #Parses time in HHMM format to datetime.time
 def parse_time(t):
     return datetime.strptime(t.strip(), "%H%M").time()
@@ -290,76 +351,6 @@ def get_user_time():
                 pass
         print("You have entered an invalid timing, please try again!")
 
-#Gets the fare for a certain distance and age category
-def get_fare(distance, cat, fare):
-    for lower, upper, price in fares[cat]:
-        if lower <= distance <= upper:
-            return price
-    return None
-
-#Find the shortest route between two stations
-def opt2(): 
-    startstation, endstation, path, total_distance = calcbestroute()
-    
-    print("\nRoute:")
-    prev_line = None
-    line_segment = []
-    first_line_printed = False
-    for i in range(len(path)):
-        station = path[i]
-        code = get_all_station_code(station)
-        current_line = None
-
-        if i < len(path) - 1:
-            distance, current_line = get_distance_between(path[i], path[i + 1])
-        elif i > 0:
-            distance, current_line = get_distance_between(path[i - 1], path[i])
-
-        if prev_line and (current_line != prev_line or i == len(path) - 1):
-            if i == len(path) - 1:
-                line_segment.append(f"{code} {station}")
-            if not first_line_printed:
-                print(f"On {prev_line} Line")
-                first_line_printed = True
-            else:
-                print(f"\nTransfer to {prev_line} Line")
-            print(" -> ".join(line_segment))
-            line_segment = []
-        
-        if i == 0 or current_line == prev_line or prev_line is None:
-            line_segment.append(f"{code} {station}")
-        prev_line = current_line
-
-    if not first_line_printed:
-        print(f"On {prev_line} Line")
-        print(" -> ".join(line_segment))
-    elif line_segment:
-        print(" -> ".join(line_segment))
-    return(path, total_distance)
-
-#Distance and time of travel between 2 stations
-def opt3(): 
-    path, distance = opt2()
-    total_time = 0.0
-    for i in range(len(path) - 1):
-        d, line = get_distance_between(path[i], path[i + 1])
-        prev_line = None
-        if i > 0:
-            _, prev_line = get_distance_between(path[i - 1], path[i])
-        segment_time = 0.0
-        if i < len(path) - 1:
-            if line and line in speeddict and speeddict[line] != 0:
-                total_time += d / speeddict[line] * 60 + 4 #include waiting time for alighting and boarding per station
-        if prev_line and line != prev_line:
-            segment_time += 3 #transfer from one line to another
-        total_time += segment_time
-    
-    print(f"\nTotal distance: {distance:.2f}km")
-    if total_time < 60:
-        print(f"Estimated travel time: {total_time:.1f} minutes")
-    else:
-        print(f"Estimated travel time: {int(total_time // 60)} hour(s) and {int(total_time%60)} minute(s)")
-    
 #Whether there is a train running and if it will arrive at your destination station before the last train time
 def opt4(): 
     startstation, endstation, path, total_distance = calcbestroute()
@@ -428,8 +419,15 @@ def opt5():
     for i in range(len(possiblelines)):
         print(f"{possiblelines[i]} line ({stationcodes[i]})")
 
+#Gets the fare for a certain distance and age category
+def get_fare(distance, cat, fare):
+    for lower, upper, price in fares[cat]:
+        if lower <= distance <= upper:
+            return price
+    return None
+
 #Find the fare required from Station A to B
-def opt6(): 
+def opt6():
     start, end, path, distance = calcbestroute()
     print(fares)
     print("\nWhat is your age category (Adult, Student, Senior)?")
@@ -456,10 +454,83 @@ def opt6():
         fare -= 50.0
     if fare < 0.0:
         fare = 0.0
+    print(f"\nThe total distance is: {distance:.1f} km")
     if fare > 99:
-        print(f"The total fare is: {fare//100} dollar(s) and {fare%100} cent(s)")
+        print(f"The total fare is: {fare//100:.0f} dollar(s) and {fare%100:.0f} cent(s)")
     else:
-        print(f"The total fare is: {fare} cent(s)")
+        print(f"The total fare is: {fare:.0f} cent(s)")
+
+#Show all interchange stations
+def opt7():
+    print("\nDo you want to know a specific line's interchange or every interchange?")
+    print("Enter the line name, code, or all for every interchange")
+    allselected = False
+    line = None
+    while not line:
+        user = input(">>> ").strip()
+        if user.lower() == "all":
+            allselected = True
+            break
+        line = recogniseline(user)
+        if not line:
+            print("\nThat is not a valid option!")
+            print("Please try again! >_<")
+    interchanges = []
+    for i in stations:
+        count = 0
+        temp = []
+        for x in mrtlines:
+            if i == x[0].lower():
+                count += 1
+                temp.append(x[1])
+        if count > 1:
+            interchanges.append([i, temp])
+    if allselected:
+        print("\nHere is a list of all the interchange stations:")
+        for i in interchanges:
+            print(f" - {i[0].title()}: {', '.join(i[1])}")
+    else:
+        print(f"\nHere is a list of all the interchanges of {line} Line:")
+        for i in interchanges:
+            if line in i[1]:
+                print(f" - {i[0].title()}: {', '.join(i[1])}")
+
+def get_train_last_timing(option):
+    if not option:  # 'all' case
+       return
+
+    elif option.lower() in stations:
+        return
+
+    elif option in lines:
+        return
+
+#First and last train timings for a line, station or all the stations
+def opt8():
+    print("\nPlease input a line, a station, or all for all stations")
+    option = None
+    allselected = False
+    stationselected = False
+    lineselected = False
+    while not option:
+        user = input(">>> ").strip()
+        if user.lower() == "all":
+            allselected = True
+            break
+        if recogniseinput(user):
+            stationselected = True
+            option = recogniseinput(user)
+            break
+        if recogniseline(user):
+            lineselected = True
+            option = recogniseline(user)
+            break
+        if not option:
+            print("\nThat is not a valid input!")
+            print("Please try again! >_<")
+    lasttraintiming = get_train_last_timing(option)
+    if allselected or stationselected:
+        print()
 
 #The main function that compiles all the options together
 def main():
@@ -483,6 +554,10 @@ def main():
         opt5()
     if choice == choices[5]:
         opt6()
+    if choice == choices[6]:
+        opt7()
+    if choice == choices[7]:
+        opt8()
     
 while True:
     main()
