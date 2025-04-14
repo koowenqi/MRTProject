@@ -23,7 +23,7 @@ No.;Station Pair;Line;Distance;First;Last;First opp;Last opp
 18;CC17 Caldecott <-> CC19 Botanic Gardens;Circle;3.9;0528;2323;0545;2325
 19;CC19 Botanic Gardens <-> CC20 Farrer Road;Circle;1.0;0532;2327;0543;2323
 20;CC20 Farrer Road <-> CC21 Holland Village;Circle;1.4;0534;2329;0540;2321
-21;CC21 Holland Village <-> CC22 Buona Vista;Circle;0.9;0537;0601;0539;2319
+21;CC21 Holland Village <-> CC22 Buona Vista;Circle;0.9;0537;2331;0539;2319
 22;CC22 Buona Vista <-> CC23 One-north;Circle;0.8;0539;2334;0536;2317
 23;CC23 One-north <-> CC24 Kent Ridge;Circle;0.8;0541;2335;0535;2315
 24;CC24 Kent Ridge <-> CC25 Haw Par Villa;Circle;1.4;0535;2337;0532;2312

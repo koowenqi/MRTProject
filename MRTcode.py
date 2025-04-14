@@ -495,15 +495,27 @@ def opt7():
             if line in i[1]:
                 print(f" - {i[0].title()}: {', '.join(i[1])}")
 
-def get_train_last_timing(option):
-    if not option:  # 'all' case
-       return
-
-    elif option.lower() in stations:
-        return
-
-    elif option in lines:
-        return
+#Gets all the last train timing to and fro from every station
+def get_train_last_timing(): #5 last s1 to s2, 7 last s2 to s1
+    lasttraintime = {}
+    for i in mrt:
+        line = i[2]
+        s1_to_s2 = i[5]
+        s2_to_s1 = i[7]
+        stations = i[1].split(" <-> ")
+        s1_code, s1 = stations[0].split(" ", 1)
+        s2_code, s2 = stations[1].split(" ", 1)
+        if s1 not in lasttraintime:
+            lasttraintime[s1] = {}
+        if line not in lasttraintime[s1]:
+            lasttraintime[s1][line] = []
+        lasttraintime[s1][line].append([s2_code, s2, s1_to_s2, s2_to_s1])
+        if s2 not in lasttraintime:
+            lasttraintime[s2] = {}
+        if line not in lasttraintime[s2]:
+            lasttraintime[s2][line] = []
+        lasttraintime[s2][line].append([s1_code, s1, s2_to_s1, s1_to_s2])
+    return lasttraintime
 
 #First and last train timings for a line, station or all the stations
 def opt8():
@@ -528,9 +540,33 @@ def opt8():
         if not option:
             print("\nThat is not a valid input!")
             print("Please try again! >_<")
-    lasttraintiming = get_train_last_timing(option)
-    if allselected or stationselected:
-        print()
+    lasttraintiming = get_train_last_timing()
+    if allselected:
+        print("\nThe last train timings for all the stations are:")
+        for station in lasttraintiming:
+            print(f"- {station}:")
+            for line in lasttraintiming[station]:
+                for i in lasttraintiming[station][line]:
+                    to_code, to_station, to_time, from_time = i
+                    print(f" - {line}: To {to_code} {to_station} at {to_time[:2]}:{to_time[2:]}, From {to_code} {to_station} at {from_time[:2]}{from_time[2:]}")
+    if stationselected:
+        print(f"\nThe last train timing(s) for {option} is:")
+        print(f"- {option}:")
+        for station in lasttraintiming:
+            if station == option:
+                for line in lasttraintiming[station]:
+                    for i in lasttraintiming[station][line]:
+                        to_code, to_station, to_time, from_time = i
+                        print(f" - {line}: To {to_code} {to_station} at {to_time[:2]}:{to_time[2:]}, From {to_code} {to_station} at {from_time[:2]}{from_time[2:]}")
+    if lineselected:
+        print(f"\n The last train timings for {option} Line is:")
+        print(f"- {option} Line:")
+        for station in lasttraintiming:
+            for line in lasttraintiming[station]:
+                if line == option:
+                    for i in lasttraintiming[station][line]:
+                        to_code, to_station, to_time, from_time = i
+                        print(f" - {station}: To {to_code} {to_station} at {to_time[:2]}:{to_time[2:]}, From {to_code} {to_station} at {from_time[:2]}{from_time[2:]}")
 
 #The main function that compiles all the options together
 def main():
