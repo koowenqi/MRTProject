@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import mrtturtle
 
 mrt = [] #Stores each line from MRT.txt into a list (raw data) (e.g. 1;CC1 Dhoby Ghaut <-> CC2 Bras Basah;Circle;0.6;0607;2357;0554;0003)
 lines = [] #Stores all the different lines (e.g. Circle, North East)
@@ -169,6 +170,7 @@ def opt1():
     templist.sort(key=sort_key)
     for i in templist:
         print(f"{i[0]} {i[1]}")
+    mrtturtle.draw_mrt_line(line, templist)
 
 #Maps every station to the next station it will go to and vice versa
 def stationconnect(): 
@@ -606,4 +608,7 @@ while True:
     if "y" in resume.lower():
         continue
     else:
+        print("\nRemember to click on the graphics interface to close it!")
         break
+import turtle
+turtle.exitonclick()
