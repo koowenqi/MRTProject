@@ -1,4 +1,5 @@
 import turtle as T
+import math
 
 def title_footer():
     screen = T.Screen()
@@ -194,7 +195,6 @@ panel_info = draw_grey_panel()
 def draw_bestroute(path, linelist):
     screen = T.Screen()
     screen.clear()  # Clears previous drawings (for repeated use)
-    screen.title("MRT Project")
     screen.setup(width=1000, height=700)
 
     pen = T.Turtle()
@@ -495,3 +495,260 @@ def write_time_check_info(startstation, endstation, projected_arrival_time, last
         )
 
     write_wrapped(pen, info, x, y, max_width=300, line_height=line_height)
+
+def draw_station_info_graphics(station, possiblelines, stationcodes):
+    screen = T.Screen()
+    screen.clear()
+    screen.setup(width=600, height=400)
+
+    pen = T.Turtle()
+    pen.hideturtle()
+    pen.speed(0)
+    
+    title_footer()
+
+    center_x, center_y = 0, 0
+    radius = 100
+    angle_between = 360 / max(1, len(possiblelines))
+
+    # Draw central station dot
+    pen.penup()
+    pen.goto(center_x, center_y)
+    pen.dot(30, "white")
+    pen.dot(26, "black")
+    pen.goto(center_x, center_y - 30)
+    pen.color("black")
+    pen.write(station, align="center", font=("Arial", 14, "bold"))
+
+    # Draw each line as a branch
+    for i in range(len(possiblelines)):
+        angle = math.radians(angle_between * i - 90)
+        branch_x = center_x + radius * math.cos(angle)
+        branch_y = center_y + radius * math.sin(angle)
+        line_color = get_line_color(possiblelines[i])
+        stationcode = stationcodes[i]
+        label = f"{possiblelines[i]} Line ({stationcode})"
+
+        # Draw connecting line
+        pen.penup()
+        pen.goto(center_x, center_y)
+        pen.pendown()
+        pen.color(line_color)
+        pen.pensize(2)
+        pen.goto(branch_x, branch_y)
+
+        # Draw dot at the end
+        pen.penup()
+        pen.goto(branch_x, branch_y)
+        pen.dot(14, line_color)
+
+        # Write label slightly offset
+        label_offset = 20
+        label_x = branch_x + label_offset * math.cos(angle)
+        label_y = branch_y + label_offset * math.sin(angle)
+
+        align = "left"
+        if -90 < angle_between * i <= 90:
+            align = "left"
+        elif 90 < angle_between * i <= 270:
+            align = "right"
+        else:
+            align = "center"
+
+        pen.goto(label_x, label_y)
+        pen.color("black")
+        pen.write(label, align=align, font=("Arial", 10, "normal"))
+
+def draw_fare_info(start, end, category, is_peak, distance, fare):
+    screen = T.Screen()
+    screen.clear()
+    screen.setup(width=600, height=400)
+
+    title_footer()
+
+    pen = T.Turtle()
+    pen.hideturtle()
+    pen.speed(0)
+    pen.penup()
+    
+    # Panel background
+    pen.goto(-250, 150)
+    pen.color("lightgrey")
+    pen.begin_fill()
+    for _ in range(2):
+        pen.forward(500)
+        pen.right(90)
+        pen.forward(300)
+        pen.right(90)
+    pen.end_fill()
+
+    # Title
+    pen.goto(0, 100)
+    pen.color("black")
+    pen.write("Your MRT Fare Summary", align="center", font=("Arial", 16, "bold"))
+
+    # Info text
+    pen.goto(-200, 70)
+    pen.write(f"From: {start}", font=("Arial", 12))
+    pen.goto(-200, 40)
+    pen.write(f"To: {end}", font=("Arial", 12))
+    pen.goto(-200, 10)
+    pen.write(f"Age Category: {category.capitalize()}", font=("Arial", 12))
+    pen.goto(-200, -20)
+    pen.write(f"Time: {'Peak' if is_peak else 'Off-Peak'}", font=("Arial", 12))
+    pen.goto(-200, -40)
+    pen.write(f"Distance: {distance:.1f} km", font=("Arial", 12))
+
+    # Fare
+    pen.goto(-200, -90)
+    if fare > 99:
+        fare_msg = f"{fare//100:.0f} dollar(s) and {fare%100:.0f} cent(s)"
+    else:
+        fare_msg = f"{fare:.0f} cent(s)"
+    pen.write(f"Total Fare: {fare_msg}", font=("Arial", 14, "bold"))
+
+    pen.goto(-200, -130)
+    pen.write("Thank you for riding with us!", font=("Arial", 10, "italic"))
+
+def draw_interchanges(interchanges, line_filter=None):
+    screen = T.Screen()
+    screen.clear()
+    screen.setup(width=900, height=700)
+
+    pen = T.Turtle()
+    pen.hideturtle()
+    pen.speed(0)
+    pen.penup()
+
+    start_x = -350
+    start_y = 300
+    vertical_spacing = 80
+
+    title = f"Interchanges for {line_filter} Line" if line_filter else "All MRT Interchanges"
+    pen.goto(0, 320)
+    pen.write(title, align="center", font=("Arial", 16, "bold"))
+
+    current_x = start_x
+    current_y = start_y
+    max_per_column = 7
+    count = 0
+
+    for station, lines in interchanges:
+        if line_filter and line_filter not in lines:
+            continue
+
+        # Draw black dot for station
+        pen.penup()
+        pen.goto(current_x, current_y)
+        pen.dot(20, "black")
+
+        # Label station name next to black dot
+        pen.goto(current_x + 25, current_y - 5)
+        pen.write(station.title(), font=("Arial", 10, "bold"))
+
+        # Draw each line with line color + connection
+        offset_y = 15
+        for i, line in enumerate(lines):
+            color = get_line_color(line)
+            pen.goto(current_x, current_y)
+            pen.pendown()
+            pen.pensize(2)
+            pen.color(color)
+            pen.goto(current_x + 60, current_y - offset_y * i)
+            pen.penup()
+            pen.goto(current_x + 65, current_y - offset_y * i - 4)
+            pen.dot(8, color)
+            pen.goto(current_x + 75, current_y - offset_y * i - 6)
+            pen.write(f"{line}", font=("Arial", 8))
+
+        count += 1
+        current_y -= vertical_spacing
+
+        # Next column if too low
+        if count % max_per_column == 0:
+            current_y = start_y
+            current_x += 280
+
+def draw_last_train_info(lasttraintiming, option_type=None, option_value=None):
+    import turtle as T
+    screen = T.Screen()
+    screen.clear()
+    screen.setup(width=1000, height=700)
+
+    pen = T.Turtle()
+    pen.hideturtle()
+    pen.speed(0)
+
+    title_footer()
+
+    panel_width = 1000
+    columns = 3
+    column_width = panel_width // columns
+    panel_x_start = -500
+    panel_y_start = 320
+    panel_bottom_y = -320
+
+    # Draw grey panel
+    pen.penup()
+    pen.goto(panel_x_start - 10, panel_y_start + 40)
+    pen.color("lightgrey")
+    pen.begin_fill()
+    pen.goto(panel_x_start + columns * column_width + 10, panel_y_start + 40)
+    pen.goto(panel_x_start + columns * column_width + 10, panel_bottom_y)
+    pen.goto(panel_x_start - 10, panel_bottom_y)
+    pen.goto(panel_x_start - 10, panel_y_start + 40)
+    pen.end_fill()
+
+    x = panel_x_start
+    y = panel_y_start
+    line_height = 16
+    col = 0
+
+    # Heading
+    if option_type == "all":
+        heading = "Last Train Timings for All Stations"
+    elif option_type == "station":
+        heading = f"Last Train Timings for {option_value.title()}"
+    elif option_type == "line":
+        heading = f"Last Train Timings for {option_value.title()} Line"
+    else:
+        heading = "Last Train Timings"
+
+    pen.penup()
+    pen.goto(x, y)
+    pen.color("black")
+    pen.write(heading, font=("Arial", 14, "bold"))
+    y -= line_height * 2
+
+    for station in lasttraintiming:
+        if option_type == "station" and station != option_value:
+            continue
+
+        station_has_output = False
+
+        for line in lasttraintiming[station]:
+            if option_type == "line" and line != option_value:
+                continue
+
+            if not station_has_output:
+                pen.goto(x, y)
+                pen.write(f"{station.title()}:", font=("Arial", 10, "bold"))
+                y -= line_height
+                station_has_output = True
+
+            for to_code, to_station, to_time, from_time in lasttraintiming[station][line]:
+                text = (f"- {line}: To {to_code} {to_station} at {to_time[:2]}:{to_time[2:]}, "
+                        f"From {to_code} {to_station} at {from_time[:2]}:{from_time[2:]}")
+                write_wrapped(pen, text, x + 10, y, max_width=column_width - 20, line_height=line_height)
+                y -= 40  # Adjust if needed for typical wrapped height
+
+
+            y -= 4  # space between line sections
+
+        y -= 10  # space between stations
+
+        # Next column if overflow
+        if y < panel_bottom_y:
+            col += 1
+            x = panel_x_start + col * column_width
+            y = panel_y_start - 40

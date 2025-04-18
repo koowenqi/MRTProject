@@ -45,8 +45,8 @@ def readingfiles():
             stationcat[station1_code] = i[2]
         if station2_code not in stationcat:
             stationcat[station2_code] = i[2]
-        if i[2].lower() not in lines:
-            lines.append(i[2].lower())
+        if i[2].lower().title() not in lines:
+            lines.append(i[2].lower().title())
         if station1_name.lower() not in stations:
             stations.append(station1_name.lower())
         if station2_name.lower() not in stations:
@@ -109,8 +109,8 @@ def recogniseline(user):
     user = user.strip()
     if user.upper() in line_prefixes:
         return line_prefixes[user.upper()]
-    if user.lower().capitalize() in lines:
-        return user.lower().capitalize()
+    if user.lower().title() in lines:
+        return user.lower().title()
     return None
 
 #Function to check if the user input is valid for MRT code and station
@@ -119,7 +119,7 @@ def recogniseinput(user): #Recognises user input if it is MRT code or the name
     if user.upper() in mrtdict:
         return mrtdict[user.upper()]
     if user.lower() in stations:
-        return user.lower().capitalize()
+        return user.lower().title()
     return None
 
 #Function to get all the codes for a given station
@@ -149,7 +149,7 @@ def opt1():
     print("\nWhat is the MRT line you would like to enquire about?")
     print("Here is a list of lines that you can inquire about:")
     for i in lines:
-        print(f"{i.capitalize()} - {next(k for k, v in line_prefixes.items() if v.lower() == i)}")
+        print(f"{i} - {next(k for k, v in line_prefixes.items() if v == i)}")
     line = None
     while not line:
         user = input("\n>>> ").strip()
@@ -471,6 +471,8 @@ def opt5():
     for i in range(len(possiblelines)):
         print(f"{possiblelines[i]} line ({stationcodes[i]})")
 
+    mrtturtle.draw_station_info_graphics(station, possiblelines, stationcodes)
+
 #Gets the fare for a certain distance and age category
 def get_fare(distance, cat, fare):
     for lower, upper, price in fares[cat]:
@@ -481,7 +483,6 @@ def get_fare(distance, cat, fare):
 #Find the fare required from Station A to B
 def opt6():
     start, end, path, distance = calcbestroute()
-    print(fares)
     print("\nWhat is your age category (Adult, Student, Senior)?")
     cat = input("Enter age category: ").strip()
     while str(cat).lower() not in fares:
@@ -511,6 +512,8 @@ def opt6():
         print(f"The total fare is: {fare//100:.0f} dollar(s) and {fare%100:.0f} cent(s)")
     else:
         print(f"The total fare is: {fare:.0f} cent(s)")
+    
+    mrtturtle.draw_fare_info(start, end, cat, peakh, distance, fare)
 
 #Show all interchange stations
 def opt7():
@@ -541,11 +544,13 @@ def opt7():
         print("\nHere is a list of all the interchange stations:")
         for i in interchanges:
             print(f" - {i[0].title()}: {', '.join(i[1])}")
+        mrtturtle.draw_interchanges(interchanges)
     else:
         print(f"\nHere is a list of all the interchanges of {line} Line:")
         for i in interchanges:
             if line in i[1]:
                 print(f" - {i[0].title()}: {', '.join(i[1])}")
+        mrtturtle.draw_interchanges(interchanges, line_filter=line)
 
 #Gets all the last train timing to and fro from every station
 def get_train_last_timing(): #5 last s1 to s2, 7 last s2 to s1
@@ -601,6 +606,7 @@ def opt8():
                 for i in lasttraintiming[station][line]:
                     to_code, to_station, to_time, from_time = i
                     print(f" - {line}: To {to_code} {to_station} at {to_time[:2]}:{to_time[2:]}, From {to_code} {to_station} at {from_time[:2]}{from_time[2:]}")
+        mrtturtle.draw_last_train_info(lasttraintiming, option_type="all")
     if stationselected:
         print(f"\nThe last train timing(s) for {option} is:")
         print(f"- {option}:")
@@ -610,6 +616,7 @@ def opt8():
                     for i in lasttraintiming[station][line]:
                         to_code, to_station, to_time, from_time = i
                         print(f" - {line}: To {to_code} {to_station} at {to_time[:2]}:{to_time[2:]}, From {to_code} {to_station} at {from_time[:2]}{from_time[2:]}")
+        mrtturtle.draw_last_train_info(lasttraintiming, option_type="station", option_value=option)
     if lineselected:
         print(f"\n The last train timings for {option} Line is:")
         print(f"- {option} Line:")
@@ -619,6 +626,7 @@ def opt8():
                     for i in lasttraintiming[station][line]:
                         to_code, to_station, to_time, from_time = i
                         print(f" - {station}: To {to_code} {to_station} at {to_time[:2]}:{to_time[2:]}, From {to_code} {to_station} at {from_time[:2]}{from_time[2:]}")
+        mrtturtle.draw_last_train_info(lasttraintiming, option_type="line", option_value=option)
 
 #The main function that compiles all the options together
 def main():
