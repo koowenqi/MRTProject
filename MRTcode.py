@@ -231,7 +231,7 @@ def calcbestroute():
         user = input("Start Station: ").strip()
         startstation = recogniseinput(user)
         if not startstation:
-            print("That station does not exist!")
+            print("\nThat station does not exist!")
             print("Please try again! >_<")
     print(f"Start Station selected: {startstation}")
     
@@ -241,7 +241,7 @@ def calcbestroute():
         user = input("End Station: ").strip()
         endstation = recogniseinput(user)
         if not endstation:
-            print("That station does not exist!")
+            print("\nThat station does not exist!")
             print("Please try again! >_<")
         if endstation:
             if startstation.lower() == endstation.lower():
@@ -259,11 +259,11 @@ def calcbestroute():
     return startstation, endstation, path, total_distance
 
 #Find the shortest route between two stations
-def opt2(): 
+def opt2(draw=True): 
     startstation, endstation, path, total_distance = calcbestroute()
-    
     print("\nRoute:")
     prev_line = None
+    currentlinelist = []
     current_segment = []
     for i in range(len(path)):
         station = path[i]
@@ -275,8 +275,8 @@ def opt2():
         elif i > 0:
             distance, current_line = get_distance_between(path[i - 1], path[i])
 
+        currentlinelist.append(current_line)
         current_segment.append(f"{code} {station}")
-
         # If line changes or it's the last station, print the segment
         line_changed = current_line != prev_line and prev_line is not None
         is_last = i == len(path) - 1
@@ -291,7 +291,10 @@ def opt2():
             current_segment = []
 
         prev_line = current_line
-    return(path, total_distance)
+    if draw:
+        mrtturtle.draw_bestroute(path, currentlinelist)
+        mrtturtle.write_route_info(path, currentlinelist, startstation, endstation, None, None)
+    return(path, total_distance, currentlinelist, startstation, endstation)
 
 #Function to get the distance between side by side stations
 def get_distance_between(s1, s2):
@@ -305,7 +308,7 @@ def get_distance_between(s1, s2):
 
 #Distance and time of travel between 2 stations
 def opt3(): 
-    path, distance = opt2()
+    path, distance, currentlinelist, startstation, endstation = opt2(draw=False)
     total_time = 0.0
     for i in range(len(path) - 1):
         d, line = get_distance_between(path[i], path[i + 1])
@@ -325,6 +328,9 @@ def opt3():
         print(f"Estimated travel time: {total_time:.1f} minutes")
     else:
         print(f"Estimated travel time: {int(total_time // 60)} hour(s) and {int(total_time%60)} minute(s)")
+    
+    mrtturtle.draw_bestroute(path, currentlinelist)
+    mrtturtle.write_route_info(path, currentlinelist, startstation, endstation, total_time, distance)
     
 #Parses time in HHMM format to datetime.time
 def parse_time(t):
@@ -356,10 +362,21 @@ def get_user_time():
 #Whether there is a train running and if it will arrive at your destination station before the last train time
 def opt4(): 
     startstation, endstation, path, total_distance = calcbestroute()
+    currentlinelist = []
+    prev_line = None
+    for i in range(len(path)):
+        if i < len(path) - 1:
+            _, current_line = get_distance_between(path[i], path[i + 1])
+        elif i > 0:
+            _, current_line = get_distance_between(path[i - 1], path[i])
+        else:
+            current_line = None
+        currentlinelist.append(current_line)
     currenttime = get_user_time()
     base_date = currenttime.date()
     print(f"\nChecking train availability from {startstation} to {endstation}...")
-    total_time = 0.0
+    cumulative_time = 0.0 #Cumulative time from start to current segment
+    lasttrain_dt = None
 
     for i in range(len(path) - 1):
         s1 = path[i]
@@ -367,36 +384,69 @@ def opt4():
         dist, line = get_distance_between(s1, s2)
         segment_time = 0.0
         if line in speeddict and speeddict[line] != 0:
-            segment_time = dist / speeddict[line] * 60 + 4
+            segment_time = dist / speeddict[line] * 60 + 4 #+4 adds in alighting/boarding time
         if i > 0:
             _, prev_line = get_distance_between(path[i - 1], s1)
             if prev_line != line:
-                segment_time += 3 #additional transfer time
-
-        firsttrain, lasttrain = get_train_time(s1, s2)
-        firsttrain_dt = datetime.combine(base_date, firsttrain)
-        lasttrain_dt = datetime.combine(base_date, lasttrain)
-        if lasttrain < firsttrain:
-            lasttrain_dt += timedelta(days=1)
-        arrival_dt = currenttime + timedelta(minutes=total_time + segment_time)
-        if currenttime < firsttrain_dt or currenttime > lasttrain_dt:
-            print(f"No train running from {s1} to {s2} (Service hours: {firsttrain.strftime('%H:%M')} - {lasttrain.strftime('%H:%M')})")
-            return
-        if arrival_dt > lasttrain_dt:
-            print(f"Journey cannot be completed: You will reach {s2} at {arrival_dt.strftime('%H:%M')}, but the last train departs at {lasttrain.strftime('%H:%M')}")
-            print(f"This means the journey fails from: {s1} → {s2}")
-            print("As a result, you cannot reach your destination on time.")
-            delay = (arrival_dt - lasttrain_dt).seconds // 60
-            print(f"You are {delay} minutes late for the last train to {s2}. Consider departing earlier.")
-            latest_departure = lasttrain_dt - timedelta(minutes=segment_time)
-            print(f"You must depart before {latest_departure.strftime('%H:%M')} to catch the last train to {s2}.")
-            print(f"You can only reach up to {s1} based on your current departure time.")
-            return
+                segment_time += 3 #Additional transfer time
+        cumulative_time += segment_time
         
-        total_time += segment_time
+        #Saves last train timing to the final station
+        if i == len(path) - 2:
+            firsttrain, lasttrain = get_train_time(s1, s2)
+            lasttrain_dt = datetime.combine(base_date, lasttrain)
+            if lasttrain < datetime.strptime("0400", "%H%M").time():
+                lasttrain_dt += timedelta(days=1)
 
-    final_arrival = (currenttime + timedelta(minutes=total_time)).time()
-    print(f"A train is currently running, and you will reach {endstation} at around {final_arrival.strftime('%H:%M')} if you depart now.")
+        #Projected arrival time to final station
+    projected_arrival_time = currenttime+timedelta(minutes=cumulative_time)
+
+    travel_hours = int(cumulative_time // 60)
+    travel_minutes = int(cumulative_time % 60)
+    time_msg = (
+        f"{travel_hours} hour(s) and {travel_minutes} minute(s)"
+        if travel_hours > 0 else
+        f"{travel_minutes} minute(s)"
+    )
+    latest_departure = lasttrain_dt - timedelta(minutes=cumulative_time)
+    if projected_arrival_time <= lasttrain_dt:
+        ontime = True
+        print(f"You will reach {endstation} at around {projected_arrival_time.strftime('%H:%M')}, which is within operating hours.")
+        print(f"Total travel time: {time_msg}")
+        mrtturtle.draw_limited_route(path, currentlinelist, len(path) - 1)
+    else:
+        ontime = False
+        delay = (projected_arrival_time - lasttrain_dt).seconds // 60
+        delay_hours = int(delay // 60)
+        delay_minutes = int(delay % 60)
+        delay_msg = (
+            f"{delay_hours} hour(s) and {delay_minutes} minute(s)"
+            if delay_hours > 0 else
+            f"{delay_minutes} minute(s)"
+        )
+        print("The journery cannot be completed in time.")
+        print(f"You will reach {endstation} at {projected_arrival_time.strftime('%H:%M')}, but the last train departs at {lasttrain_dt.strftime('%H:%M')}.")
+        print(f"Total travel time needed: {time_msg}")
+        print(f"You are {delay_msg} minutes late.")
+        print(f"You must depart from {startstation} before {latest_departure.strftime('%H:%M')} to reach {endstation} on time.")
+        reachable_index = 0
+        current_time = currenttime
+        for i in range(len(path) - 1):
+            s1 = path[i]
+            s2 = path[i + 1]
+            d, line = get_distance_between(s1, s2)
+            seg_time = d / speeddict[line] * 60 + 4
+            if i > 0:
+                _, prev_line = get_distance_between(path[i - 1], s1)
+                if line != prev_line:
+                    seg_time += 3
+            current_time += timedelta(minutes=seg_time)
+            if current_time <= lasttrain_dt:
+                reachable_index = i + 1
+            else:
+                break
+        mrtturtle.draw_limited_route(path, currentlinelist, reachable_index)
+    mrtturtle.write_time_check_info(startstation, endstation, projected_arrival_time, lasttrain_dt, cumulative_time, latest_departure, ontime)
 
 #What MRT line the station is at
 def opt5(): 
