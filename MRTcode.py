@@ -391,8 +391,8 @@ def opt4():
                 segment_time += 3 #Additional transfer time
         cumulative_time += segment_time
         
-        #Saves last train timing to the final station
-        if i == len(path) - 2:
+        #Saves last train timing from first to second station
+        if i == 0:
             firsttrain, lasttrain = get_train_time(s1, s2)
             lasttrain_dt = datetime.combine(base_date, lasttrain)
             if lasttrain < datetime.strptime("0400", "%H%M").time():
